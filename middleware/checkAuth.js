@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
-import {TOKEN_SECRET_KEY} from "../config/constants.js";
 
-export default function checkAuth(req, res, next) {
+export function checkAuth(req, res, next) {
     const token = (req.headers.authorization || '').replace(/Bearer\s?/, '')
 
     if (!token) {
@@ -9,7 +8,7 @@ export default function checkAuth(req, res, next) {
     }
 
     try {
-        const decoded = jwt.verify(token, TOKEN_SECRET_KEY)
+        const decoded = jwt.verify(token, process.env.TOKEN_SECRET_KEY)
         req.userId = decoded._id
         next()
     }

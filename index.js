@@ -4,17 +4,15 @@ import fs from 'fs'
 import multer from "multer";
 import cors from 'cors'
 import dotenv from 'dotenv'
-import {MONGO_URL} from "./config/urls.js";
 import {PORT} from "./config/constants.js";
 import {UserController} from "./controllers/index.js";
 import {checkAuth} from "./middleware/index.js";
 import {handleValidationErrors, fileNamePreparation} from "./utils/index.js";
-import {loginValidations, signupValidations} from "./validations/index.js";
+import {signupValidations} from "./validations/index.js";
 
 dotenv.config()
-
 const app = express();
-const db = mongoose.connect(MONGO_URL)
+const db = mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log('Connected to Mediatoria MongoDB'))
     .catch((err) => console.log(err))
 
@@ -42,7 +40,7 @@ app.get('/', (req, res) => {
 
 // AUTH
 app.post('/auth/signup', signupValidations, handleValidationErrors, UserController.signup)
-app.post('/auth/login', loginValidations, handleValidationErrors, UserController.login)
+app.post('/auth/login', UserController.login)
 app.get('/auth/me', checkAuth, UserController.getMe)
 
 const upload = multer({storage: storage})

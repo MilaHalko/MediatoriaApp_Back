@@ -1,1 +1,1 @@
-export {loginValidations, signupValidations} from './auth.js'
+export {signupValidations} from './auth.js'
