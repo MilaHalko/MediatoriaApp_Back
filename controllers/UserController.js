@@ -5,6 +5,16 @@ import {SALT_ROUNDS, TOKEN_EXPIRES_IN} from "../config/constants.js";
 
 export const signup = async (req, res) => {
     try {
+        console.log(req.body)
+        if (req.body.password !== req.body.confirmPassword) {
+            return res.status(400).json({message: 'Passwords do not match'})
+        }
+
+        const userExists = await User.findOne({email: req.body.email})
+        if (userExists) {
+            return res.status(400).json({message: 'Email already in use'})
+        }
+
         const salt = await bcrypt.genSalt(SALT_ROUNDS)
         const hashedPassword = await bcrypt.hash(req.body.password, salt)
 
@@ -30,7 +40,7 @@ export const signup = async (req, res) => {
 
     } catch (e) {
         res.status(500).json({
-            message: 'Signup failed',
+            message: e.message,
         })
     }
 }
