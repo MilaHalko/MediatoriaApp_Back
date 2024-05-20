@@ -9,6 +9,7 @@ import {UserController} from "./controllers/index.js";
 import {checkAuth} from "./middleware/index.js";
 import {handleValidationErrors, fileNamePreparation} from "./utils/index.js";
 import {signupValidations} from "./validations/index.js";
+import {updateValidations} from "./validations/auth.js";
 
 dotenv.config()
 const app = express();
@@ -42,6 +43,7 @@ app.get('/', (req, res) => {
 app.post('/auth/signup', signupValidations, handleValidationErrors, UserController.signup)
 app.post('/auth/login', UserController.login)
 app.get('/auth/me', checkAuth, UserController.getMe)
+app.patch('/auth/me', checkAuth, updateValidations, handleValidationErrors, UserController.updateMe)
 
 const upload = multer({storage: storage})
 app.post('/upload', checkAuth, upload.single('image'), (req, res) => {

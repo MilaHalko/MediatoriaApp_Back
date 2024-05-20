@@ -16,3 +16,9 @@ export const signupValidations = [
     body('password', errorTexts.password).isLength({min: password.minLength, max: password.maxLength}),
     body('avatarUrl', errorTexts.avatarUrl).optional().isURL().custom(isImage),
 ]
+
+export const updateValidations = [
+    body('username', errorTexts.username).optional().isLength({min: username.minLength, max: username.maxLength}),
+    body('password', errorTexts.password).optional().isLength({min: password.minLength, max: password.maxLength}),
+    body('avatarUrl', errorTexts.avatarUrl).optional().isURL().custom(isImage),
+]

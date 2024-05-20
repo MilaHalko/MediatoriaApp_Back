@@ -62,6 +62,46 @@ export const login = async (req, res) => {
     }
 }
 
+export const updateMe = async (req, res) => {
+    try {
+        console.log('UpdateMe:', req.body)
+        if (req.body.newPassword && req.body.confirmPassword
+            && req.body.newPassword !== req.body.confirmPassword) {
+            return res.status(400).json({message: 'Passwords do not match'})
+        }
+
+        const updatedData = {}
+        if (req.body.username) updatedData.username = req.body.username
+        if (req.body.avatarUrl) updatedData.avatarUrl = req.body.avatarUrl
+        if (req.body.oldPassword) updatedData.oldPasswordHash = await getHashedPassword(req.body.oldPassword)
+        if (req.body.newPassword) updatedData.passwordHash = await getHashedPassword(req.body.newPassword)
+
+        console.log('Old password:', req.body.oldPassword)
+        console.log('New password:', req.body.newPassword)
+        console.log('Updated data:', updatedData)
+        const user = await User.findOne({email: req.body.email})
+        if (!user || (req.body.oldPassword && !await bcrypt.compare(req.body.oldPassword, user.passwordHash))) {
+            return res.status(400).json({message: 'Invalid old password'})
+        }
+
+        const userData = await User.findOneAndUpdate(
+            {email: req.body.email},
+            updatedData,
+            {new: true}
+        ).then(doc => doc._doc)
+
+        console.log('Updated user:', userData)
+        res.json({...userData})
+
+    } catch
+        (e) {
+        console.log('Update failed', e)
+        res.status(500).json({
+            message: 'Update failed',
+        })
+    }
+}
+
 export const getMe = async (req, res) => {
     try {
         const user = await User.findById(req.userId)
