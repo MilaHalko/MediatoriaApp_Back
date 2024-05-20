@@ -23,7 +23,7 @@ const UserSchema = new Schema({
             enum: ['user', 'admin']
         },
         favoriteMovies: {
-            type: Array,
+            type: [String],
             default: []
         }
     }, {

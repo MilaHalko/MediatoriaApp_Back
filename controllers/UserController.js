@@ -88,10 +88,11 @@ export const updateMe = async (req, res) => {
             {email: req.body.email},
             updatedData,
             {new: true}
-        ).then(doc => doc._doc)
+        ).then(doc => doc)
 
-        console.log('Updated user:', userData)
-        res.json({...userData})
+        const {passwordHash, ...data} = userData._doc
+        console.log('Updated user:', data)
+        res.json({...data})
 
     } catch
         (e) {
@@ -128,7 +129,7 @@ export const deleteMe = async (req, res) => {
         if (!user) {
             res.status(404).json({message: 'User not found'})
         } else {
-        res.json({message: 'User deleted'})
+            res.json({message: 'User deleted'})
         }
     } catch (e) {
         console.log('Delete failed', e)
@@ -136,4 +137,45 @@ export const deleteMe = async (req, res) => {
             message: 'Delete failed',
         })
     }
+}
+
+export const addFavorite = async (req, res) => {
+    const userId = req.userId
+    const postId = req.params.id
+    await User.findByIdAndUpdate(
+        userId,
+        {$addToSet: {favoriteMovies: postId}},
+        {new: true}
+    ).then(doc => {
+        if (!doc) {
+            return res.status(404).json({message: 'User not found'})
+        }
+        const {passwordHash, ...data} = doc._doc
+        console.log('Add favorite:', data)
+        res.json(data)
+    }).catch(e => {
+        console.log(e)
+        res.status(500).json({message: 'Add favorite error'})
+    })
+}
+
+export const removeFavorite = async (req, res) => {
+    const userId = req.userId
+    const postId = req.params.id
+    await User.findByIdAndUpdate(
+        userId,
+        {$pull: {favoriteMovies: postId}},
+        {new: true}
+    ).then(doc => {
+        if (!doc) {
+            return res.status(404).json({message: 'User not found'})
+        }
+        console.log('MovieId:', req.params.id)
+        const {passwordHash, ...data} = doc._doc
+        console.log('Remove favorite:', data)
+        res.json(data)
+    }).catch(e => {
+        console.log(e)
+        res.status(500).json({message: 'Remove favorite error'})
+    })
 }

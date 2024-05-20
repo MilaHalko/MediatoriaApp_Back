@@ -46,10 +46,14 @@ app.get('/auth/me', checkAuth, UserController.getMe)
 app.patch('/auth/me', checkAuth, updateValidations, handleValidationErrors, UserController.updateMe)
 app.delete('/auth/me', checkAuth, UserController.deleteMe)
 
+app.post('/auth/favorites/:id', checkAuth, UserController.addFavorite)
+app.delete('/auth/favorites/:id', checkAuth, UserController.removeFavorite)
+
 const upload = multer({storage: storage})
 app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
     res.json({url: `/uploads/${req.file.originalname}`})
 })
+
 
 // // POSTS
 // app.get('/posts', PostController.getAll)
