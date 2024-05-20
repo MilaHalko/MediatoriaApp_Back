@@ -120,3 +120,20 @@ export const getMe = async (req, res) => {
         })
     }
 }
+
+export const deleteMe = async (req, res) => {
+    try {
+        console.log('DeleteMe:', req.userId)
+        const user = await User.findByIdAndDelete(req.userId)
+        if (!user) {
+            res.status(404).json({message: 'User not found'})
+        } else {
+        res.json({message: 'User deleted'})
+        }
+    } catch (e) {
+        console.log('Delete failed', e)
+        res.status(500).json({
+            message: 'Delete failed',
+        })
+    }
+}

@@ -44,6 +44,7 @@ app.post('/auth/signup', signupValidations, handleValidationErrors, UserControll
 app.post('/auth/login', UserController.login)
 app.get('/auth/me', checkAuth, UserController.getMe)
 app.patch('/auth/me', checkAuth, updateValidations, handleValidationErrors, UserController.updateMe)
+app.delete('/auth/me', checkAuth, UserController.deleteMe)
 
 const upload = multer({storage: storage})
 app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
