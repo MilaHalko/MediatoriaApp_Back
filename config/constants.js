@@ -12,6 +12,15 @@ export const VALIDATION_PARAMS = {
     password: {
         minLength: 6,
         maxLength: 20
+    },
+    review: {
+        text: {
+            minLength: 3
+        },
+        rating: {
+            min: 1,
+            max: 10
+        }
     }
 }
 
