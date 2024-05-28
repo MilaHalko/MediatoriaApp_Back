@@ -10,6 +10,8 @@ import {checkAuth} from "./middleware/index.js";
 import {handleValidationErrors, fileNamePreparation} from "./utils/index.js";
 import {signupValidations} from "./validations/index.js";
 import {updateValidations} from "./validations/auth.js";
+import {reviewValidation} from "./validations/review.js";
+import * as ReviewController from "./controllers/ReviewController.js";
 
 dotenv.config()
 const app = express();
@@ -55,16 +57,13 @@ app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
 })
 
 
-// // POSTS
-// app.get('/posts', PostController.getAll)
-// app.get('/posts/:id', PostController.getOne)
-// app.post('/posts', checkAuth, fullPostValidation, handleValidationErrors, PostController.create)
-// app.delete('/posts/:id', checkAuth, PostController.remove)
-// app.patch('/posts/:id', checkAuth, fullPostValidation, handleValidationErrors, PostController.update)
-//
-// app.get('/tags', PostController.getLastTags)
-//
-
+// REVIEWS
+app.get('/reviews/movie/:movieId', ReviewController.getByMovie);
+app.get('/review/:id', ReviewController.getOne);
+app.post('/review', checkAuth, reviewValidation, handleValidationErrors, ReviewController.create);
+app.delete('/review/:id', checkAuth, ReviewController.remove);
+app.post('/review/:id/like', checkAuth, ReviewController.like);
+app.post('/review/:id/unlike', checkAuth, ReviewController.unlike);
 
 app.listen(PORT, (err) => {
     if (err) return console.log(err)
