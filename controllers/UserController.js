@@ -105,20 +105,20 @@ export const updateMe = async (req, res) => {
 
 export const getMe = async (req, res) => {
     try {
-        const user = await User.findById(req.userId)
+        const user = await User.findById(req.userId);
         if (!user) {
-            res.status(404).json({message: 'User not found'})
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        const token = generateToken(user._id)
-        const {passwordHash, ...userData} = user._doc
-        res.json({...userData, token})
+        const token = generateToken(user._id);
+        const { passwordHash, ...userData } = user._doc;
+        return res.json({ ...userData, token });
 
     } catch (e) {
-        console.log('No permission', e)
-        res.status(500).json({
+        console.log('No permission', e);
+        return res.status(500).json({
             message: 'No permission',
-        })
+        });
     }
 }
 

@@ -1,6 +1,7 @@
 import Review from '../models/Review.js';
 
 export const getByMovie = async (req, res) => {
+    console.log('Getting reviews by movie...')
     try {
         const { movieId } = req.params;
         const reviews = await Review.find({ movieId })
@@ -30,6 +31,7 @@ export const getOne = async (req, res) => {
 };
 
 export const create = async (req, res) => {
+    console.log('Creating review...')
     const { text, rating, movieId } = req.body;
     try {
         const review = new Review({
@@ -38,7 +40,8 @@ export const create = async (req, res) => {
             authorId: req.userId,
             movieId,
         });
-        const savedReview = await review.save();
+        let savedReview = await review.save();
+        savedReview = await savedReview.populate('authorId', 'username')
         console.log('Review created', savedReview)
         res.status(201).json(savedReview);
     } catch (err) {
@@ -48,15 +51,16 @@ export const create = async (req, res) => {
 };
 
 export const remove = async (req, res) => {
+    console.log('Removing review...')
     try {
-        const postId = req.params.id
-        await Review.findOneAndDelete({_id: postId})
+        const reviewId = req.params.id
+        await Review.findOneAndDelete({_id: reviewId})
             .then(doc => {
                 if (!doc) {
-                    return res.status(404).json({message: 'No post found'})
+                    return res.status(404).json({message: 'No review found'})
                 }
-                console.log('Post deleted')
-                res.json({message: 'Post deleted'})
+                console.log('Review deleted')
+                res.json({message: 'Review deleted'})
             })
     } catch (err) {
         console.log(err)
@@ -65,27 +69,33 @@ export const remove = async (req, res) => {
 };
 
 export const like = async (req, res) => {
+    console.log('Liking review...')
     try {
         const review = await Review.findByIdAndUpdate(
             req.params.id,
             { $addToSet: { likes: req.userId } }, // Add user ID to likes array
             { new: true }
         ).populate('authorId', 'username');
+        console.log('Review liked', review)
         res.json(review);
     } catch (err) {
+        console.log(err)
         res.status(500).json({ message: err.message });
     }
 };
 
 export const unlike = async (req, res) => {
+    console.log('Unliking review...')
     try {
         const review = await Review.findByIdAndUpdate(
             req.params.id,
             { $pull: { likes: req.userId } }, // Remove user ID from likes array
             { new: true }
         ).populate('authorId', 'username');
+        console.log('Review unliked', review)
         res.json(review);
     } catch (err) {
+        console.log(err)
         res.status(500).json({ message: err.message });
     }
 };
