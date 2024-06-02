@@ -8,13 +8,14 @@ const generateToken = (userId) => {
 }
 
 const getHashedPassword = async (password) => {
+    console.log('Salt rounds:', SALT_ROUNDS, 'Password:', password)
     const salt = await bcrypt.genSalt(SALT_ROUNDS)
     return await bcrypt.hash(password, salt)
 }
 
 export const signup = async (req, res) => {
     try {
-        console.log(req.body)
+        console.log('Signup:', req.body)
         if (req.body.password !== req.body.confirmPassword) {
             return res.status(400).json({message: 'Passwords do not match'})
         }
@@ -34,6 +35,7 @@ export const signup = async (req, res) => {
         const token = generateToken(user._id)
         const {passwordHash, ...userData} = user._doc
 
+        console.log('User created:', req.body.password, 'Hash:', user.passwordHash)
         res.json({...userData, token})
 
     } catch (e) {
@@ -44,13 +46,16 @@ export const signup = async (req, res) => {
 }
 
 export const login = async (req, res) => {
+    console.log('Login:', req.body)
     try {
         const user = await User.findOne({email: req.body.email})
         if (!user || !await bcrypt.compare(req.body.password, user.passwordHash)) {
             return res.status(400).json({message: 'Invalid email or password'})
         }
-
         const token = generateToken(user._id)
+        const refreshToken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET_KEY, { expiresIn: '7d' });
+        user.refreshToken = refreshToken;
+        await user.save();
         const {passwordHash, ...userData} = user._doc
         res.json({...userData, token})
 
@@ -63,6 +68,7 @@ export const login = async (req, res) => {
 }
 
 export const updateMe = async (req, res) => {
+    console.log('UpdateMe:', req.body)
     try {
         console.log('UpdateMe:', req.body)
         if (req.body.newPassword && req.body.confirmPassword
@@ -104,6 +110,7 @@ export const updateMe = async (req, res) => {
 }
 
 export const getMe = async (req, res) => {
+    console.log('GetMe:', req.userId)
     try {
         const user = await User.findById(req.userId);
         if (!user) {
@@ -122,7 +129,34 @@ export const getMe = async (req, res) => {
     }
 }
 
+
+export const refreshToken = async (req, res) => {
+    console.log('Refresh token:', req.body.token)
+    const { token: refreshToken } = req.body;
+    if (!refreshToken) {
+        return res.status(400).json({ message: 'No refresh token provided' });
+    }
+
+    try {
+        const decoded = jwt.verify(refreshToken, process.env.TOKEN_SECRET_KEY);
+        const user = await User.findById(decoded._id);
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid refresh token' });
+        }
+
+        const newToken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET_KEY, { expiresIn: '15m' });
+        const newRefreshToken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET_KEY, { expiresIn: '7d' });
+
+        res.json({ token: newToken, refreshToken: newRefreshToken });
+    } catch (e) {
+        return res.status(401).json({ message: 'Invalid refresh token' });
+    }
+};
+
+
+
 export const deleteMe = async (req, res) => {
+    console.log('DeleteMe:', req.userId)
     try {
         console.log('DeleteMe:', req.userId)
         const user = await User.findByIdAndDelete(req.userId)
@@ -140,6 +174,7 @@ export const deleteMe = async (req, res) => {
 }
 
 export const addFavorite = async (req, res) => {
+    console.log()
     const userId = req.userId
     const postId = req.params.id
     await User.findByIdAndUpdate(
