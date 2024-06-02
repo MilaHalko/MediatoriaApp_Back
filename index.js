@@ -1,19 +1,15 @@
+import './config/config.js'
 import express from 'express'
 import mongoose from 'mongoose'
 import fs from 'fs'
 import multer from "multer";
 import cors from 'cors'
-import dotenv from 'dotenv'
 import {PORT} from "./config/constants.js";
-import {UserController} from "./controllers/index.js";
 import {checkAuth} from "./middleware/index.js";
 import {handleValidationErrors, fileNamePreparation} from "./utils/index.js";
-import {signupValidations} from "./validations/index.js";
-import {updateValidations} from "./validations/auth.js";
-import {reviewValidation} from "./validations/review.js";
-import * as ReviewController from "./controllers/ReviewController.js";
+import {UserController, ReviewController, MovieController} from "./controllers/index.js";
+import {reviewValidation, signupValidations, updateValidations} from "./validations/index.js";
 
-dotenv.config()
 const app = express();
 const db = mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log('Connected to Mediatoria MongoDB'))
@@ -44,6 +40,7 @@ app.get('/', (req, res) => {
 // AUTH
 app.post('/auth/signup', signupValidations, handleValidationErrors, UserController.signup)
 app.post('/auth/login', UserController.login)
+app.post('/refresh-token', UserController.refreshToken);
 app.get('/auth/me', checkAuth, UserController.getMe)
 app.patch('/auth/me', checkAuth, updateValidations, handleValidationErrors, UserController.updateMe)
 app.delete('/auth/me', checkAuth, UserController.deleteMe)
@@ -64,6 +61,15 @@ app.post('/review', checkAuth, reviewValidation, handleValidationErrors, ReviewC
 app.delete('/review/:id', checkAuth, ReviewController.remove);
 app.post('/review/:id/like', checkAuth, ReviewController.like);
 app.post('/review/:id/unlike', checkAuth, ReviewController.unlike);
+
+
+// MOVIES
+app.get('/movies/:id', checkAuth, MovieController.getMovieById);
+app.get('/movies/name/:name', checkAuth, MovieController.getMovieByName);
+app.get('/movies/favorites', checkAuth, MovieController.getFavoriteMovies);
+app.post('/movies/request', checkAuth, MovieController.getMoviesByRequest);
+app.post('/movies/like-toggle', checkAuth, MovieController.likeToggle);
+app.get('/movies/:id/trailer', checkAuth, MovieController.getMovieTrailer);
 
 app.listen(PORT, (err) => {
     if (err) return console.log(err)
