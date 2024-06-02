@@ -2,10 +2,9 @@ import {urlIsValid} from "../validations/url.js";
 import {tmdbImageBaseUrl, tmdbRequests} from "../config/tmdbRequests.js";
 
 export const getMovieById = async (id) => {
-    console.log('Getting movie by ID:', id)
     try {
-        const response = await fetch(tmdbRequests.iD(id))
-        return await response.json()
+        const resJson = await fetch(tmdbRequests.iD(id)).then(async res => await res.json())
+        return await setMoviesImgUrl([resJson])
     } catch (e) {
         console.log(e)
         return null;
@@ -13,10 +12,9 @@ export const getMovieById = async (id) => {
 }
 
 export const getMovieByName = async (Name) => {
-    console.log('Getting movie by name:', Name)
     try {
-        const res = await fetch(tmdbRequests.title(Name))
-        return await res.json()
+        const resJson = await fetch(tmdbRequests.title(Name)).then(async res => await res.json())
+        return await setMoviesImgUrl([resJson])
     } catch (e) {
         console.log(e)
         return null;
@@ -24,10 +22,8 @@ export const getMovieByName = async (Name) => {
 }
 
 export const getTrailerById = async (id) => {
-    console.log('Getting trailer by ID:', id)
     try {
-        const res = await fetch(tmdbRequests.trailer(id))
-        const resJson = await res.json()
+        const resJson = await fetch(tmdbRequests.trailer(id)).then(async res => await res.json())
         return resJson.results[0].key
     } catch (e) {
         console.log(e)
@@ -36,7 +32,6 @@ export const getTrailerById = async (id) => {
 }
 
 export const getMoviesByRequest = async (query, movieCount) => {
-    console.log('Getting movies by request:', query, movieCount)
     if (movieCount === undefined) movieCount = 1000
     const request = tmdbRequests.request(query)
     const steps = Math.ceil(movieCount / 20.0)
