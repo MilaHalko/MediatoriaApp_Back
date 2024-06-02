@@ -4,7 +4,7 @@ import {tmdbImageBaseUrl, tmdbRequests} from "../config/tmdbRequests.js";
 export const getMovieById = async (id) => {
     try {
         const resJson = await fetch(tmdbRequests.iD(id)).then(async res => await res.json())
-        return await setMoviesImgUrl([resJson])
+        return await setMoviesImgUrl(resJson)
     } catch (e) {
         console.log(e)
         return null;
@@ -14,7 +14,7 @@ export const getMovieById = async (id) => {
 export const getMovieByName = async (Name) => {
     try {
         const resJson = await fetch(tmdbRequests.title(Name)).then(async res => await res.json())
-        return await setMoviesImgUrl([resJson])
+        return await setMoviesImgUrl(resJson)
     } catch (e) {
         console.log(e)
         return null;
@@ -54,6 +54,7 @@ export const getMoviesByRequest = async (query, movieCount) => {
 }
 
 const setMoviesImgUrl = async (movies) => {
+    if (!movies.length) movies = [movies]
     for (let i = 0; i < movies.length; i++) {
         const movie = movies[i]
         await getValidTmdbImgUrl(movie).then(url => {
@@ -62,6 +63,7 @@ const setMoviesImgUrl = async (movies) => {
             delete movies[i].poster_path
         })
     }
+    if (movies.length === 1) return movies[0]
     return movies
 }
 
