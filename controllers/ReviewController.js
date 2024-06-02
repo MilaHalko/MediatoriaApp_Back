@@ -73,7 +73,7 @@ export const like = async (req, res) => {
     try {
         const review = await Review.findByIdAndUpdate(
             req.params.id,
-            { $addToSet: { likes: req.userId } }, // Add user ID to likes array
+            { $addToSet: { likes: req.userId } },
             { new: true }
         ).populate('authorId', 'username');
         console.log('Review liked', review)
@@ -89,7 +89,7 @@ export const unlike = async (req, res) => {
     try {
         const review = await Review.findByIdAndUpdate(
             req.params.id,
-            { $pull: { likes: req.userId } }, // Remove user ID from likes array
+            { $pull: { likes: req.userId } },
             { new: true }
         ).populate('authorId', 'username');
         console.log('Review unliked', review)

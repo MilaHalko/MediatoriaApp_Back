@@ -71,7 +71,7 @@ export const likeToggle = async (req, res) => {
             user.favoriteMovies.push(movieId);
         }
         await user.save();
-        res.json(user.favoriteMovies);
+        await getFavoriteMovies(req, res);
     } catch (error) {
         console.error(error);
         res.status(500).json({message: 'Server error'});
