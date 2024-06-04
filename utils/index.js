@@ -1,3 +1,11 @@
-export {handleValidationErrors} from './handleValidationErrors.js'
-export {fileNamePreparation} from './dataPreparations.js'
-export {isImage} from './dataCheck.js'
+import {handleValidationErrors} from './handleValidationErrors.js'
+import {fileNamePreparation} from './dataPreparations.js'
+import {isImage} from './dataCheck.js'
+
+export {
+    handleValidationErrors,
+    fileNamePreparation,
+    isImage
+}
+
+
