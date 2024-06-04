@@ -8,8 +8,6 @@ const ReviewSchema = new Schema({
     rating: {
         type: Number,
         required: true,
-        min: 1,
-        max: 5
     },
     likes: {
         type: [mongoose.Types.ObjectId],

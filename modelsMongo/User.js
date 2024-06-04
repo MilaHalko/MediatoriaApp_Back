@@ -1,4 +1,4 @@
-import {Schema, model} from "mongoose";
+import mongoose, {Schema, model} from "mongoose";
 
 const UserSchema = new Schema({
         username: {
@@ -14,9 +14,6 @@ const UserSchema = new Schema({
             type: String,
             required: true,
         },
-        avatarUrl: {
-            type: String
-        },
         role: {
             type: String,
             default: 'user',
@@ -24,8 +21,12 @@ const UserSchema = new Schema({
         },
         favoriteMovies: {
             type: [String],
+            ref: 'Movie',
             default: []
-        }
+        },
+        refreshToken: {
+            type: String
+        },
     }, {
         timestamps: true,
     },

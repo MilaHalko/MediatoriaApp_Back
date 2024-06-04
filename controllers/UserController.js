@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import User from "../models/User.js";
+import User from "../modelsMongo/User.js";
 import jwt from "jsonwebtoken";
 import {SALT_ROUNDS, TOKEN_EXPIRES_IN} from "../config/constants.js";
 

@@ -1,4 +1,4 @@
-import Review from '../models/Review.js';
+import Review from '../modelsMongo/Review.js';
 
 export const getByMovie = async (req, res) => {
     console.log('Getting reviews by movie...')

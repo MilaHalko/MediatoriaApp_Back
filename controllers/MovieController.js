@@ -1,6 +1,6 @@
 import * as TmdbController from "./TmdbController.js";
-import User from "../models/User.js";
-import Movie from "../models/Movie.js";
+import User from "../modelsMongo/User.js";
+import Movie from "../modelsMongo/Movie.js";
 import mongoose from "mongoose";
 
 const createMovieFromTmdb = async (tmdbId) => {
@@ -91,6 +91,8 @@ export const getMoviesByRequest = async (req, res) => {
             }
             return movie;
         }));
+        // const user = await User.findById(req.userId);
+        // const recommendations = await recommendMovies({user, movies});
         res.json(movies);
     } catch (error) {
         console.error(error);
