@@ -24,9 +24,10 @@ export const getMovieByName = async (Name) => {
 export const getTrailerById = async (id) => {
     try {
         const resJson = await fetch(tmdbRequests.trailer(id)).then(async res => await res.json())
+        if (!resJson.results || !resJson.results.length) return null
         return resJson.results[0].key
     } catch (e) {
-        console.log(e)
+        console.log('Get trailer error:', id, e)
         return null;
     }
 }

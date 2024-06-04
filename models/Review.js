@@ -22,7 +22,8 @@ const ReviewSchema = new Schema({
         required: true
     },
     movieId: {
-        type: String,
+        type: mongoose.Types.ObjectId,
+        ref: 'Movie',
         required: true
     }
 }, {

@@ -1,18 +1,43 @@
 import * as TmdbController from "./TmdbController.js";
 import User from "../models/User.js";
+import Movie from "../models/Movie.js";
+import mongoose from "mongoose";
+
+const createMovieFromTmdb = async (tmdbId) => {
+    const tmdbMovie = await TmdbController.getMovieById(tmdbId);
+    const youTubeKey = await TmdbController.getTrailerById(tmdbId);
+    try {
+        const movie = new Movie({
+            tmdbId: tmdbId,
+            title: tmdbMovie.title,
+            genres: tmdbMovie.genres,
+            releaseDate: tmdbMovie.release_date,
+            overview: tmdbMovie.overview,
+            imgUrl: tmdbMovie.imgUrl,
+            popularity: tmdbMovie.popularity,
+            youTubeKey: youTubeKey,
+            ratingCount: tmdbMovie.vote_count,
+            averageRating: tmdbMovie.vote_average
+        });
+        return await movie.save();
+    } catch (error) {
+        console.error('Error creating movie from TMDB id:', tmdbId, error);
+        throw error;
+    }
+};
 
 export const getMovieById = async (req, res) => {
     console.log('Get movie by id:', req.params.id)
     const {id} = req.params;
     try {
-        const movie = await TmdbController.getMovieById(id);
+        const movie = await Movie.findById(id);
         if (!movie) {
-            return res.status(404).json({message: 'Movie not found'});
+            return res.status(404).json({ message: 'Movie not found' });
         }
         res.json(movie);
     } catch (error) {
         console.error(error);
-        res.status(500).json({message: 'Server error'});
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
@@ -20,14 +45,19 @@ export const getMovieByName = async (req, res) => {
     console.log('Get movie by name:', req.params.name)
     const {name} = req.params;
     try {
-        const movie = await TmdbController.getMovieByName(name);
+        let movie = await Movie.findOne({ title: name });
         if (!movie) {
-            return res.status(404).json({message: 'Movie not found'});
+            const tmdbMovie = await TmdbController.getMovieByName(name);
+            const tmdbId = tmdbMovie.id;
+            movie = await createMovieFromTmdb(tmdbId);
+        }
+        if (!movie) {
+            return res.status(404).json({ message: 'Movie not found' });
         }
         res.json(movie);
     } catch (error) {
         console.error(error);
-        res.status(500).json({message: 'Server error'});
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
@@ -36,13 +66,15 @@ export const getFavoriteMovies = async (req, res) => {
     try {
         const user = await User.findById(req.userId);
         if (!user) {
-            return res.status(404).json({message: 'User not found'});
+            return res.status(404).json({ message: 'User not found' });
         }
-        const movies = await Promise.all(user.favoriteMovies.map(id => TmdbController.getMovieById(id)));
+        const movies = await Promise.all(user.favoriteMovies.map(async id => {
+            return await Movie.findOne({tmdbId: id}) || await createMovieFromTmdb(id);
+        }));
         res.json(movies.filter(movie => movie !== null));
     } catch (error) {
         console.error(error);
-        res.status(500).json({message: 'Server error'});
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
@@ -50,25 +82,33 @@ export const getMoviesByRequest = async (req, res) => {
     console.log('Get movies by request:', req.body.query, req.body.movieCount)
     const {query, movieCount} = req.body;
     try {
-        const movies = await TmdbController.getMoviesByRequest(query, movieCount);
+        const tmdbMovies = await TmdbController.getMoviesByRequest(query, movieCount);
+        const movies = await Promise.all(tmdbMovies.map(async tmdbMovie => {
+            let movie = await Movie.findOne({ tmdbId: tmdbMovie.id })
+            if (!movie) {
+                console.log('No movie found with id:', tmdbMovie.id);
+                movie = await createMovieFromTmdb(tmdbMovie.id);
+            }
+            return movie;
+        }));
         res.json(movies);
     } catch (error) {
         console.error(error);
-        res.status(500).json({message: 'Server error'});
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
 export const likeToggle = async (req, res) => {
-    const {movieId, isLiked} = req.body;
+    const {tmdbMovieId, isLiked} = req.body;
     try {
         const user = await User.findById(req.userId);
         if (!user) {
             return res.status(404).json({message: 'User not found'});
         }
         if (isLiked) {
-            user.favoriteMovies = user.favoriteMovies.filter(id => id !== movieId.toString());
+            user.favoriteMovies = user.favoriteMovies.filter(id => id !== tmdbMovieId.toString());
         } else {
-            user.favoriteMovies.push(movieId);
+            user.favoriteMovies.push(tmdbMovieId.toString());
         }
         await user.save();
         await getFavoriteMovies(req, res);
@@ -79,10 +119,10 @@ export const likeToggle = async (req, res) => {
 };
 
 export const getMovieTrailer = async (req, res) => {
-    console.log('Get movie trailer by id:', req.params.id)
-    const {id} = req.params;
+    console.log('Get movie trailer by id:', req.params.tmdbId)
+    const {tmdbId} = req.params;
     try {
-        const trailer = await TmdbController.getTrailerById(id);
+        const trailer = await TmdbController.getTrailerById(tmdbId);
         if (!trailer) {
             return res.status(404).json({message: 'Trailer not found'});
         }

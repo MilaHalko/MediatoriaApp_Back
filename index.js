@@ -69,7 +69,7 @@ app.get('/movies/name/:name', checkAuth, MovieController.getMovieByName);
 app.get('/movies/user/favorites', checkAuth, MovieController.getFavoriteMovies);
 app.post('/movies/request', checkAuth, MovieController.getMoviesByRequest);
 app.post('/movies/like-toggle', checkAuth, MovieController.likeToggle);
-app.get('/movies/:id/trailer', checkAuth, MovieController.getMovieTrailer);
+app.get('/movies/:tmdbId/trailer', checkAuth, MovieController.getMovieTrailer);
 
 app.listen(PORT, (err) => {
     if (err) return console.log(err)
