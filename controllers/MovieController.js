@@ -21,7 +21,7 @@ const createMovieFromTmdb = async (tmdbId) => {
         });
         return await movie.save();
     } catch (error) {
-        console.error('Error creating movie from TMDB id:', tmdbId, error);
+        console.error('Error creating movie from TMDB id:', tmdbId, 'TmdbMovie:', tmdbMovie, error);
         throw error;
     }
 };
