@@ -1,5 +1,6 @@
 import Review from '../modelsMongo/Review.js';
 import Movie from "../modelsMongo/Movie.js";
+import User from "../modelsMongo/User.js";
 
 export const getByMovie = async (req, res) => {
     console.log('Getting reviews by movie...')
@@ -62,7 +63,14 @@ export const create = async (req, res) => {
 export const remove = async (req, res) => {
     console.log('Removing review...')
     try {
+        const reviewId = req.params.id;
         const review = await Review.findById(reviewId)
+        console.log('User id:', req.userId)
+        const user = await User.findById(req.userId)
+        if (review.authorId !== user._id && user.role !== 'admin') {
+            return res.status(403).json({message: 'Forbidden'})
+        }
+
         const movie = await Movie.findById(review.movieId)
         await Movie.findByIdAndUpdate(review.movieId, {
             $pull: {reviewsId: reviewId},
