@@ -10,7 +10,6 @@ const MovieSchema = new Schema({
         ref: 'Review',
         default: []
     },
-
     title: {
         type: String,
         required: true
@@ -21,15 +20,12 @@ const MovieSchema = new Schema({
     },
     releaseDate: {
         type: Date,
-        required: true
     },
     overview: {
         type: String,
-        default: ''
     },
     imgUrl: {
         type: String,
-        required: true
     },
     popularity: {
         type: Number,
@@ -40,12 +36,12 @@ const MovieSchema = new Schema({
     },
 
     ratingCount: {
-        type: [Number],
-        required: true
+        type: Number,
+        default: 0
     },
     averageRating: {
         type: Number,
-        required: true
+        default: 0
     },
 }, {
     timestamps: true,

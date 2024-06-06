@@ -1,7 +1,7 @@
 import * as TmdbController from "./TmdbController.js";
 import User from "../modelsMongo/User.js";
 import Movie from "../modelsMongo/Movie.js";
-import mongoose from "mongoose";
+import {fetchFilteredMovies} from "../utils/machineLearning/fetchRecommendations.js";
 
 const createMovieFromTmdb = async (tmdbId) => {
     const tmdbMovie = await TmdbController.getMovieById(tmdbId);
@@ -32,32 +32,31 @@ export const getMovieById = async (req, res) => {
     try {
         const movie = await Movie.findById(id);
         if (!movie) {
-            return res.status(404).json({ message: 'Movie not found' });
+            return res.status(404).json({message: 'Movie not found'});
         }
         res.json(movie);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({message: 'Server error'});
     }
 };
 
-export const getMovieByName = async (req, res) => {
-    console.log('Get movie by name:', req.params.name)
+export const getMoviesByName = async (req, res) => {
     const {name} = req.params;
     try {
-        let movie = await Movie.findOne({ title: name });
-        if (!movie) {
-            const tmdbMovie = await TmdbController.getMovieByName(name);
-            const tmdbId = tmdbMovie.id;
-            movie = await createMovieFromTmdb(tmdbId);
-        }
-        if (!movie) {
-            return res.status(404).json({ message: 'Movie not found' });
-        }
-        res.json(movie);
+        const tmdbMovies = await TmdbController.getMoviesByName(name);
+        const movies = await Promise.all(tmdbMovies.map(async tmdbMovie => {
+            let movie = await Movie.findOne({tmdbId: tmdbMovie.id})
+            if (!movie) {
+                console.log('Creating movie with id:', tmdbMovie.id);
+                movie = await createMovieFromTmdb(tmdbMovie.id);
+            }
+            return movie;
+        }))
+        res.json(movies);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({message: 'Server error'});
     }
 };
 
@@ -66,7 +65,7 @@ export const getFavoriteMovies = async (req, res) => {
     try {
         const user = await User.findById(req.userId);
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({message: 'User not found'});
         }
         const movies = await Promise.all(user.favoriteMovies.map(async id => {
             return await Movie.findOne({tmdbId: id}) || await createMovieFromTmdb(id);
@@ -74,7 +73,7 @@ export const getFavoriteMovies = async (req, res) => {
         res.json(movies.filter(movie => movie !== null));
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({message: 'Server error'});
     }
 };
 
@@ -84,19 +83,19 @@ export const getMoviesByRequest = async (req, res) => {
     try {
         const tmdbMovies = await TmdbController.getMoviesByRequest(query, movieCount);
         const movies = await Promise.all(tmdbMovies.map(async tmdbMovie => {
-            let movie = await Movie.findOne({ tmdbId: tmdbMovie.id })
+            let movie = await Movie.findOne({tmdbId: tmdbMovie.id})
             if (!movie) {
                 console.log('No movie found with id:', tmdbMovie.id);
                 movie = await createMovieFromTmdb(tmdbMovie.id);
             }
             return movie;
         }));
-        // const user = await User.findById(req.userId);
-        // const recommendations = await recommendMovies({user, movies});
+        const user = await User.findById(req.userId);
+        // const filteredMovies = await fetchFilteredMovies(user, movies);
         res.json(movies);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({message: 'Server error'});
     }
 };
 

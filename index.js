@@ -7,7 +7,7 @@ import cors from 'cors'
 import {PORT} from "./config/constants.js";
 import {checkAuth} from "./middleware/index.js";
 import {handleValidationErrors, fileNamePreparation} from "./utils/index.js";
-import {UserController, ReviewController, MovieController} from "./controllers/index.js";
+import {UserController, ReviewController, MovieController, TmdbController} from "./controllers/index.js";
 import {reviewValidation, signupValidations, updateValidations} from "./validations/index.js";
 
 const app = express();
@@ -64,12 +64,15 @@ app.post('/review/:id/unlike', checkAuth, ReviewController.unlike);
 
 
 // MOVIES
-app.get('/movies/:id', checkAuth, MovieController.getMovieById);
-app.get('/movies/name/:name', checkAuth, MovieController.getMovieByName);
+app.get('/movies/:id', MovieController.getMovieById);
+app.post('/movies/request', MovieController.getMoviesByRequest);
+app.get('/movies/name/:name', MovieController.getMoviesByName);
 app.get('/movies/user/favorites', checkAuth, MovieController.getFavoriteMovies);
-app.post('/movies/request', checkAuth, MovieController.getMoviesByRequest);
 app.post('/movies/like-toggle', checkAuth, MovieController.likeToggle);
-app.get('/movies/:tmdbId/trailer', checkAuth, MovieController.getMovieTrailer);
+
+// TMDB
+app.get('/tmdb/genres', checkAuth, TmdbController.getTmdbGenres);
+app.get('/movies/:tmdbId/trailer', MovieController.getMovieTrailer);
 
 app.listen(PORT, (err) => {
     if (err) return console.log(err)
