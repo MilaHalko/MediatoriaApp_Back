@@ -1,4 +1,5 @@
 import Review from '../modelsMongo/Review.js';
+import Movie from "../modelsMongo/Movie.js";
 
 export const getByMovie = async (req, res) => {
     console.log('Getting reviews by movie...')
@@ -42,6 +43,7 @@ export const create = async (req, res) => {
         });
         let savedReview = await review.save();
         savedReview = await savedReview.populate('authorId', 'username')
+        await Movie.findByIdAndUpdate( movieId, { $addToSet: { reviewsId: savedReview._id } });
         console.log('Review created', savedReview)
         res.status(201).json(savedReview);
     } catch (err) {
@@ -53,6 +55,7 @@ export const create = async (req, res) => {
 export const remove = async (req, res) => {
     console.log('Removing review...')
     try {
+        await Movie.findByIdAndUpdate( req.body.movieId, { $pull: { reviewsId: req.params.id }})
         const reviewId = req.params.id
         await Review.findOneAndDelete({_id: reviewId})
             .then(doc => {
