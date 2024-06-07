@@ -69,7 +69,7 @@ app.post('/review/:id/unlike', checkAuth, ReviewController.unlike);
 app.get('/movies/:id', MovieController.getMovieById);
 app.post('/movies/request', MovieController.getMoviesByRequest);
 app.post('/movies/upcoming', setUpcomingRequest, MovieController.getMoviesByRequest);
-app.get('/movies/name/:name', MovieController.getMoviesByName);
+app.get('/movies/name/:name/:count', MovieController.getMoviesByName);
 app.get('/movies/user/favorites', checkAuth, MovieController.getFavoriteMovies);
 app.post('/movies/like-toggle', checkAuth, MovieController.likeToggle);
 

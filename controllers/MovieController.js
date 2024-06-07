@@ -1,6 +1,7 @@
 import * as TmdbController from "./TmdbController.js";
 import User from "../modelsMongo/User.js";
 import Movie from "../modelsMongo/Movie.js";
+import {fetchFilteredMovies} from "../utils/machineLearning/fetchRecommendations.js";
 
 const createMovieFromTmdb = async (tmdbId) => {
     const tmdbMovie = await TmdbController.getMovieById(tmdbId);
@@ -42,13 +43,13 @@ export const getMovieById = async (req, res) => {
 };
 
 export const getMoviesByName = async (req, res) => {
-    const {name} = req.params;
+    console.log('Get movies by name:', req.params.name, req.params.count)
+    const {name, count} = req.params;
     try {
-        const tmdbMovies = await TmdbController.getMoviesByName(name);
-        const movies = await Promise.all(tmdbMovies.map(async tmdbMovie => {
+        const tmdbMovies = await TmdbController.getMoviesByName(name, count);
+        const movies = await Promise.all(tmdbMovies.map(async (tmdbMovie, index) => {
             let movie = await Movie.findOne({tmdbId: tmdbMovie.id})
             if (!movie) {
-                console.log('Creating movie with id:', tmdbMovie.id);
                 movie = await createMovieFromTmdb(tmdbMovie.id);
             }
             return movie;
