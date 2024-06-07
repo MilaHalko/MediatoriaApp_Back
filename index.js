@@ -9,6 +9,7 @@ import {checkAuth} from "./middleware/index.js";
 import {handleValidationErrors, fileNamePreparation} from "./utils/index.js";
 import {UserController, ReviewController, MovieController, TmdbController} from "./controllers/index.js";
 import {reviewValidation, signupValidations, updateValidations} from "./validations/index.js";
+import {setUpcomingRequest} from "./middleware/setUpcomingRequest.js";
 
 const app = express();
 const db = mongoose.connect(process.env.MONGO_URL)
@@ -42,6 +43,7 @@ app.post('/auth/signup', signupValidations, handleValidationErrors, UserControll
 app.post('/auth/login', UserController.login)
 app.post('/refresh-token', UserController.refreshToken);
 app.get('/auth/me', checkAuth, UserController.getMe)
+app.get('/auth/is-admin', checkAuth, UserController.isAdmin);
 app.patch('/auth/me', checkAuth, updateValidations, handleValidationErrors, UserController.updateMe)
 app.delete('/auth/me', checkAuth, UserController.deleteMe)
 
@@ -66,6 +68,7 @@ app.post('/review/:id/unlike', checkAuth, ReviewController.unlike);
 // MOVIES
 app.get('/movies/:id', MovieController.getMovieById);
 app.post('/movies/request', MovieController.getMoviesByRequest);
+app.post('/movies/upcoming', setUpcomingRequest, MovieController.getMoviesByRequest);
 app.get('/movies/name/:name', MovieController.getMoviesByName);
 app.get('/movies/user/favorites', checkAuth, MovieController.getFavoriteMovies);
 app.post('/movies/like-toggle', checkAuth, MovieController.likeToggle);

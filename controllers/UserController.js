@@ -7,6 +7,7 @@ const generateToken = (userId) => {
     return jwt.sign({_id: userId}, process.env.TOKEN_SECRET_KEY, {expiresIn: TOKEN_EXPIRES_IN})
 }
 
+
 const getHashedPassword = async (password) => {
     console.log('Salt rounds:', SALT_ROUNDS, 'Password:', password)
     const salt = await bcrypt.genSalt(SALT_ROUNDS)
@@ -128,6 +129,23 @@ export const getMe = async (req, res) => {
         });
     }
 }
+
+export const isAdmin = async (req, res) => {
+    console.log('IsAdmin:', req.userId)
+    try {
+        const user = await User.findById(req.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const isAdmin = user.role === 'admin';
+        res.json({isAdmin});
+    } catch (e) {
+        console.log('No permission', e);
+        res.status(500).json({
+            message: 'No permission',
+        });
+    }
+};
 
 
 export const refreshToken = async (req, res) => {
