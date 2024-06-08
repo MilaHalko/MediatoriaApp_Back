@@ -15,6 +15,12 @@ import helmet from "helmet";
 
 const db = mongoose.connect(process.env.MONGO_URL).then(() => console.log('Connected to Mediatoria MongoDB')).catch((err) => console.log(err))
 
+const app = express();
+app.use(helmet.hidePoweredBy())
+app.use(express.json())
+app.use(cors({origin: true, optionsSuccessStatus: 200, credentials: true}))
+app.use('/uploads', express.static('uploads'))
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         if (!fs.existsSync('uploads')) {
@@ -22,22 +28,18 @@ const storage = multer.diskStorage({
         }
         cb(null, 'uploads')
     },
+    limits: {fileSize: 1024 * 1024 * 10},
     filename: (req, file, cb) => {
         const fileName = fileNamePreparation(file.originalname)
         cb(null, fileName)
     }
 })
 
-const app = express();
-app.use(helmet.hidePoweredBy())
-app.use(express.json())
-app.use(cors({origin: true, optionsSuccessStatus: 200, credentials: true}))
-app.use('/uploads', express.static('uploads'))
-
 const upload = multer({
     storage: storage,
     limits: {fileSize: 1024 * 1024 * 10},
 })
+
 app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
     res.json({url: `/uploads/${req.file.originalname}`})
 })
