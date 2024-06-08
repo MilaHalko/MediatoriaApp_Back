@@ -10,6 +10,8 @@ import {handleValidationErrors, fileNamePreparation} from "./utils/index.js";
 import {UserController, ReviewController, MovieController, TmdbController} from "./controllers/index.js";
 import {reviewValidation, signupValidations, updateValidations} from "./validations/index.js";
 import {setUpcomingRequest} from "./middleware/setUpcomingRequest.js";
+import {isAdmin} from "./controllers/UserController.js";
+import {checkIsAdmin} from "./middleware/checkIsAdmin.js";
 
 const app = express();
 const db = mongoose.connect(process.env.MONGO_URL)
@@ -49,6 +51,10 @@ app.delete('/auth/me', checkAuth, UserController.deleteMe)
 
 app.post('/auth/favorites/:id', checkAuth, UserController.addFavorite)
 app.delete('/auth/favorites/:id', checkAuth, UserController.removeFavorite)
+
+// AUTH ADMIN
+app.get('/users', checkAuth, checkIsAdmin, UserController.getUsers)
+app.delete('/user/:id', checkAuth, checkIsAdmin, UserController.deleteUser)
 
 const upload = multer({storage: storage})
 app.post('/upload', checkAuth, upload.single('image'), (req, res) => {

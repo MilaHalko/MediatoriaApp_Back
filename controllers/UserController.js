@@ -14,6 +14,7 @@ const getHashedPassword = async (password) => {
     return await bcrypt.hash(password, salt)
 }
 
+
 export const signup = async (req, res) => {
     try {
         console.log('Signup:', req.body)
@@ -54,7 +55,7 @@ export const login = async (req, res) => {
             return res.status(400).json({message: 'Invalid email or password'})
         }
         const token = generateToken(user._id)
-        const refreshToken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET_KEY, { expiresIn: '7d' });
+        const refreshToken = jwt.sign({_id: user._id}, process.env.TOKEN_SECRET_KEY, {expiresIn: '7d'});
         user.refreshToken = refreshToken;
         await user.save();
         const {passwordHash, ...userData} = user._doc
@@ -115,12 +116,12 @@ export const getMe = async (req, res) => {
     try {
         const user = await User.findById(req.userId);
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({message: 'User not found'});
         }
 
         const token = generateToken(user._id);
-        const { passwordHash, ...userData } = user._doc;
-        return res.json({ ...userData, token });
+        const {passwordHash, ...userData} = user._doc;
+        return res.json({...userData, token});
 
     } catch (e) {
         console.log('No permission', e);
@@ -135,9 +136,12 @@ export const isAdmin = async (req, res) => {
     try {
         const user = await User.findById(req.userId);
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({message: 'User not found'});
         }
         const isAdmin = user.role === 'admin';
+        if (!isAdmin) {
+            return res.status(403).json({message: 'No permission'});
+        }
         res.json({isAdmin});
     } catch (e) {
         console.log('No permission', e);
@@ -147,30 +151,41 @@ export const isAdmin = async (req, res) => {
     }
 };
 
+export const getUsers = async (req, res) => {
+    console.log('GetUsers by:', req.userId)
+    try {
+        const users = await User.find({});
+        res.json(users);
+    } catch (e) {
+        console.log('No permission', e);
+        res.status(500).json({
+            message: 'No permission',
+        });
+    }
+}
 
 export const refreshToken = async (req, res) => {
     console.log('Refresh token:', req.body.token)
-    const { token: refreshToken } = req.body;
+    const {token: refreshToken} = req.body;
     if (!refreshToken) {
-        return res.status(400).json({ message: 'No refresh token provided' });
+        return res.status(400).json({message: 'No refresh token provided'});
     }
 
     try {
         const decoded = jwt.verify(refreshToken, process.env.TOKEN_SECRET_KEY);
         const user = await User.findById(decoded._id);
         if (!user) {
-            return res.status(401).json({ message: 'Invalid refresh token' });
+            return res.status(401).json({message: 'Invalid refresh token'});
         }
 
-        const newToken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET_KEY, { expiresIn: '15m' });
-        const newRefreshToken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET_KEY, { expiresIn: '7d' });
+        const newToken = jwt.sign({_id: user._id}, process.env.TOKEN_SECRET_KEY, {expiresIn: '15m'});
+        const newRefreshToken = jwt.sign({_id: user._id}, process.env.TOKEN_SECRET_KEY, {expiresIn: '7d'});
 
-        res.json({ token: newToken, refreshToken: newRefreshToken });
+        res.json({token: newToken, refreshToken: newRefreshToken});
     } catch (e) {
-        return res.status(401).json({ message: 'Invalid refresh token' });
+        return res.status(401).json({message: 'Invalid refresh token'});
     }
 };
-
 
 
 export const deleteMe = async (req, res) => {
@@ -190,6 +205,23 @@ export const deleteMe = async (req, res) => {
         })
     }
 }
+
+export const deleteUser = async (req, res) => {
+    console.log('DeleteUser by Id:', req.params.id)
+    try {
+        const user = await User.findById(req.params.id)
+        if (!user || user.role === 'admin') {
+            return res.status(404).json({message: 'Unavailable to delete user'})
+        }
+        await User.findByIdAndDelete(req.params.id)
+        res.json({message: 'User deleted'})
+    } catch (e) {
+        console.log('Delete failed', e)
+        res.status(500).json({
+            message: 'Delete failed',
+        })
+    }
+};
 
 export const addFavorite = async (req, res) => {
     console.log()
