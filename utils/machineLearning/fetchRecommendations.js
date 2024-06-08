@@ -1,12 +1,7 @@
 const pyURL = 'https://tf:5001';
 
 export const fetchFilteredMovies = async (user, movies) => {
-    // const ncfMovies = await fetchNcfMovies(user, movies);
-    // const rnnMovies = await fetchRnnMovies(user, movies)
-    // console.log('ncfMovies:', ncfMovies)
-    // return mixRecommendations(ncfMovies, rnnMovies)
-    // fetchTest()
-    return
+    await fetchTest()
 }
 
 const fetchTest = async () => {

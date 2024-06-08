@@ -10,13 +10,10 @@ import {handleValidationErrors, fileNamePreparation} from "./utils/index.js";
 import {UserController, ReviewController, MovieController, TmdbController} from "./controllers/index.js";
 import {reviewValidation, signupValidations, updateValidations} from "./validations/index.js";
 import {setUpcomingRequest} from "./middleware/setUpcomingRequest.js";
-import {isAdmin} from "./controllers/UserController.js";
 import {checkIsAdmin} from "./middleware/checkIsAdmin.js";
+import helmet from "helmet";
 
-const app = express();
-const db = mongoose.connect(process.env.MONGO_URL)
-    .then(() => console.log('Connected to Mediatoria MongoDB'))
-    .catch((err) => console.log(err))
+const db = mongoose.connect(process.env.MONGO_URL).then(() => console.log('Connected to Mediatoria MongoDB')).catch((err) => console.log(err))
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -31,14 +28,22 @@ const storage = multer.diskStorage({
     }
 })
 
+const app = express();
+app.use(helmet.hidePoweredBy())
 app.use(express.json())
+app.use(cors({origin: true, optionsSuccessStatus: 200, credentials: true}))
 app.use('/uploads', express.static('uploads'))
 
-app.use(cors())
-app.get('/', (req, res) => {
-    res.send('Hello, from Mediatoria server')
+const upload = multer({
+    storage: storage,
+    limits: {fileSize: 1024 * 1024 * 10},
+})
+app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
+    res.json({url: `/uploads/${req.file.originalname}`})
 })
 
+
+app.get('/', (req, res) => {res.send('Hello, from Mediatoria server')})
 
 // AUTH
 app.post('/auth/signup', signupValidations, handleValidationErrors, UserController.signup)
@@ -52,14 +57,10 @@ app.delete('/auth/me', checkAuth, UserController.deleteMe)
 app.post('/auth/favorites/:id', checkAuth, UserController.addFavorite)
 app.delete('/auth/favorites/:id', checkAuth, UserController.removeFavorite)
 
+
 // AUTH ADMIN
 app.get('/users', checkAuth, checkIsAdmin, UserController.getUsers)
 app.delete('/user/:id', checkAuth, checkIsAdmin, UserController.deleteUser)
-
-const upload = multer({storage: storage})
-app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
-    res.json({url: `/uploads/${req.file.originalname}`})
-})
 
 
 // REVIEWS
