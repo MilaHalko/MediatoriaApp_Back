@@ -11,5 +11,4 @@ class User(BaseModel):
     favoriteMovies: List[str]
     createdAt: str
     updatedAt: str
-    __v: int
     refreshToken: str

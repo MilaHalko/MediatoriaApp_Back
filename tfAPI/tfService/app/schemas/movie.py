@@ -23,4 +23,3 @@ class Movie(BaseModel):
     averageRating: float
     createdAt: str
     updatedAt: str
-    __v: int

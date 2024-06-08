@@ -35,7 +35,7 @@ def predict_rnn(model, user, movies):
     return [{"movie": movies[i], "score": predictions[i]} for i in range(len(movies))]
 
 def get_sequential_data(user):
-    # Placeholder implementation
+    print('Generating rnn sequential data for user:', user)
     return {
         "inputs": tf.convert_to_tensor([[[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]]),
         "labels": tf.convert_to_tensor([1])

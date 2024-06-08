@@ -4,7 +4,7 @@ export const fileNamePreparation = (fileName) => {
             .split('\\').pop()
             .split(' ').join('_')
             .toLowerCase()
-            .replace(/[^a-zA-Z0-9_]/g, '')
+            .replace(/\W/g, '')
             .replace(/_{2,}/g, '_')
             + '_' + stamp
 }

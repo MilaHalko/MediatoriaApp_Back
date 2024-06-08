@@ -36,7 +36,7 @@ export const getMoviesByName = async (name, maxMoviesCount) => {
 export const getTrailerById = async (id) => {
     try {
         const resJson = await fetch(tmdbRequests.trailer(id)).then(async res => await res.json())
-        if (!resJson.results || !resJson.results.length) return null
+        if (!resJson.results?.length) return null
         return resJson.results[0].key
     } catch (e) {
         console.log('Get trailer error:', id, e)
@@ -67,12 +67,11 @@ const getTmdbPages = async (request, movieCount) => {
 
 const setMoviesImgUrl = async (movies) => {
     if (!movies.length) movies = [movies]
-    for (let i = 0; i < movies.length; i++) {
-        const movie = movies[i]
+    for (const movie of movies) {
         await getValidTmdbImgUrl(movie).then(url => {
-            movies[i].imgUrl = url
-            delete movies[i].backdrop_path
-            delete movies[i].poster_path
+            movie.imgUrl = url
+            delete movie.backdrop_path
+            delete movie.poster_path
         })
     }
     if (movies.length === 1) return movies[0]
