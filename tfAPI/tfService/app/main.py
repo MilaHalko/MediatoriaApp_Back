@@ -1,15 +1,21 @@
+import os
 import uvicorn
 from fastapi import FastAPI
 from pymongo import MongoClient
+from dotenv import load_dotenv
 from app.schemas.request_data import RequestNCF, RequestRNN
 from app.services.ncf_service import get_ncf_recommendations
 from app.services.rnn_service import get_rnn_recommendations
 from app.schemas.user import User
 
-app = FastAPI()
-client = MongoClient('mongodb+srv://admin:mediatoria@mediatoria.r1jt9ou.mongodb.net/db?retryWrites=true&w=majority&appName=Mediatoria')
+load_dotenv()
+mongodb_uri = os.getenv('MONGODB_URI')
+print(mongodb_uri)
+client = MongoClient(mongodb_uri)
 db = client['db']
 users_collection = db['users']
+
+app = FastAPI()
 
 def get_all_users():
     users = users_collection.find()
