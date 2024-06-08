@@ -1,4 +1,4 @@
-const pyURL = 'http://tf:5001';
+const pyURL = 'https://tf:5001';
 
 export const fetchFilteredMovies = async (user, movies) => {
     // const ncfMovies = await fetchNcfMovies(user, movies);
