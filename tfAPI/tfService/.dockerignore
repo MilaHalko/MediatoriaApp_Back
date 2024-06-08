@@ -1,0 +1,17 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# virtual environments
+venv/
+env/
+.venv/
+.env/
+
+.git
+.gitignore
+Dockerfile
+.dockerignore
+README.md
+*.log
