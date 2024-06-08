@@ -91,8 +91,8 @@ export const getMoviesByRequest = async (req, res) => {
             }
             return movie;
         }));
-        // const user = await User.findById(req.userId);
-        // const filteredMovies = await fetchFilteredMovies(user, movies);
+        const user = await User.findById(req.userId);
+        await fetchFilteredMovies(user, movies);
         res.json(movies);
     } catch (error) {
         console.error(error);
