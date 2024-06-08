@@ -9,6 +9,9 @@ import {checkAuth} from "./middleware/index.js";
 import {handleValidationErrors, fileNamePreparation} from "./utils/index.js";
 import {UserController, ReviewController, MovieController, TmdbController} from "./controllers/index.js";
 import {reviewValidation, signupValidations, updateValidations} from "./validations/index.js";
+import {setUpcomingRequest} from "./middleware/setUpcomingRequest.js";
+import {isAdmin} from "./controllers/UserController.js";
+import {checkIsAdmin} from "./middleware/checkIsAdmin.js";
 
 const app = express();
 const db = mongoose.connect(process.env.MONGO_URL)
@@ -42,11 +45,16 @@ app.post('/auth/signup', signupValidations, handleValidationErrors, UserControll
 app.post('/auth/login', UserController.login)
 app.post('/refresh-token', UserController.refreshToken);
 app.get('/auth/me', checkAuth, UserController.getMe)
+app.get('/auth/is-admin', checkAuth, UserController.isAdmin);
 app.patch('/auth/me', checkAuth, updateValidations, handleValidationErrors, UserController.updateMe)
 app.delete('/auth/me', checkAuth, UserController.deleteMe)
 
 app.post('/auth/favorites/:id', checkAuth, UserController.addFavorite)
 app.delete('/auth/favorites/:id', checkAuth, UserController.removeFavorite)
+
+// AUTH ADMIN
+app.get('/users', checkAuth, checkIsAdmin, UserController.getUsers)
+app.delete('/user/:id', checkAuth, checkIsAdmin, UserController.deleteUser)
 
 const upload = multer({storage: storage})
 app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
@@ -66,7 +74,8 @@ app.post('/review/:id/unlike', checkAuth, ReviewController.unlike);
 // MOVIES
 app.get('/movies/:id', MovieController.getMovieById);
 app.post('/movies/request', MovieController.getMoviesByRequest);
-app.get('/movies/name/:name', MovieController.getMoviesByName);
+app.post('/movies/upcoming', setUpcomingRequest, MovieController.getMoviesByRequest);
+app.get('/movies/name/:name/:count', MovieController.getMoviesByName);
 app.get('/movies/user/favorites', checkAuth, MovieController.getFavoriteMovies);
 app.post('/movies/like-toggle', checkAuth, MovieController.likeToggle);
 

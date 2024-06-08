@@ -29,6 +29,7 @@ export const getMoviesByRequest = async (query, movieCount) => {
 
 export const getMoviesByName = async (name, maxMoviesCount) => {
     const request = tmdbRequests.title(name.toString())
+    console.log('Request:', request)
     return await getTmdbPages(request, maxMoviesCount)
 }
 
@@ -44,7 +45,7 @@ export const getTrailerById = async (id) => {
 }
 
 const getTmdbPages = async (request, movieCount) => {
-    if (movieCount === undefined) movieCount = 1000
+    if (movieCount === undefined) movieCount = 100
     const steps = Math.ceil(movieCount / 20.0)
     let movies = []
     try {

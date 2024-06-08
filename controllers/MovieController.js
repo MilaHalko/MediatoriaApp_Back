@@ -26,6 +26,7 @@ const createMovieFromTmdb = async (tmdbId) => {
     }
 };
 
+
 export const getMovieById = async (req, res) => {
     console.log('Get movie by id:', req.params.id)
     const {id} = req.params;
@@ -42,13 +43,13 @@ export const getMovieById = async (req, res) => {
 };
 
 export const getMoviesByName = async (req, res) => {
-    const {name} = req.params;
+    console.log('Get movies by name:', req.params.name, req.params.count)
+    const {name, count} = req.params;
     try {
-        const tmdbMovies = await TmdbController.getMoviesByName(name);
-        const movies = await Promise.all(tmdbMovies.map(async tmdbMovie => {
+        const tmdbMovies = await TmdbController.getMoviesByName(name, count);
+        const movies = await Promise.all(tmdbMovies.map(async (tmdbMovie, index) => {
             let movie = await Movie.findOne({tmdbId: tmdbMovie.id})
             if (!movie) {
-                console.log('Creating movie with id:', tmdbMovie.id);
                 movie = await createMovieFromTmdb(tmdbMovie.id);
             }
             return movie;
@@ -91,7 +92,7 @@ export const getMoviesByRequest = async (req, res) => {
             return movie;
         }));
         const user = await User.findById(req.userId);
-        // const filteredMovies = await fetchFilteredMovies(user, movies);
+        await fetchFilteredMovies(user, movies);
         res.json(movies);
     } catch (error) {
         console.error(error);
