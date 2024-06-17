@@ -135,7 +135,7 @@ export const unlike = async (req, res) => {
         ).populate('authorId', 'username');
 
         const movie = await Movie.findById(review.movieId)
-        const userMovieStatistics = await getUserMovieStatistics(req.userId, movie.tmdbId);
+        const userMovieStatistics = await getValidUserMovieStatistics(req.userId, movie.tmdbId);
         await userMovieStatistics.updateOne({$pull: {likedReviews: review._id}});
         await userMovieStatistics.save();
 
