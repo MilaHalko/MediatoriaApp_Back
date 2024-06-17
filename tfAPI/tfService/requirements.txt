@@ -4,3 +4,4 @@ tensorflow~=2.16.1
 pydantic~=2.7.3
 numpy~=1.26.4
 pymongo~=4.7.3
+pandas~=2.2.2

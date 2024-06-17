@@ -2,6 +2,7 @@ import * as TmdbController from "./TmdbController.js";
 import User from "../modelsMongo/User.js";
 import Movie from "../modelsMongo/Movie.js";
 import {fetchFilteredMovies} from "../utils/machineLearning/fetchRecommendations.js";
+import {getValidUserMovieStatistics} from "./UserMovieStatisticsController.js";
 
 const createMovieFromTmdb = async (tmdbId) => {
     const tmdbMovie = await TmdbController.getMovieById(tmdbId);
@@ -46,14 +47,19 @@ export const getMoviesByName = async (req, res) => {
     console.log('Get movies by name:', req.params.name, req.params.count)
     const {name, count} = req.params;
     try {
-        const tmdbMovies = await TmdbController.getMoviesByName(name, count);
-        const movies = await Promise.all(tmdbMovies.map(async (tmdbMovie, index) => {
+        console.time('Movies by name loaded')
+        const tmdbMovies = await TmdbController.getMoviesByName(name, count)
+        console.timeEnd('Movies by name loaded')
+        console.time('Movies by name Mongo create')
+        const movies = await Promise.all(tmdbMovies.map(async (tmdbMovie) => {
             let movie = await Movie.findOne({tmdbId: tmdbMovie.id})
             if (!movie) {
                 movie = await createMovieFromTmdb(tmdbMovie.id);
             }
             return movie;
         }))
+        console.timeEnd('Movies by name Mongo create')
+        console.log('Movies by name loaded')
         res.json(movies);
     } catch (error) {
         console.error(error);
@@ -91,8 +97,9 @@ export const getMoviesByRequest = async (req, res) => {
             }
             return movie;
         }));
-        const user = await User.findById(req.userId);
-        await fetchFilteredMovies(user, movies);
+        const moviesId = movies.map(movie => movie._id);
+        await fetchFilteredMovies(req.userId, moviesId);
+        console.log('Movies by request loaded')
         res.json(movies);
     } catch (error) {
         console.error(error);
@@ -107,12 +114,18 @@ export const likeToggle = async (req, res) => {
         if (!user) {
             return res.status(404).json({message: 'User not found'});
         }
+        const userMovieStatistics = await getValidUserMovieStatistics(user._id, tmdbMovieId)
         if (isLiked) {
             user.favoriteMovies = user.favoriteMovies.filter(id => id !== tmdbMovieId.toString());
+            userMovieStatistics.liked = false;
+            userMovieStatistics.unlikeDates.push(new Date());
         } else {
             user.favoriteMovies.push(tmdbMovieId.toString());
+            userMovieStatistics.liked = true;
+            userMovieStatistics.likeDates.push(new Date());
         }
         await user.save();
+        await userMovieStatistics.save();
         await getFavoriteMovies(req, res);
     } catch (error) {
         console.error(error);

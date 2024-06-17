@@ -8,7 +8,7 @@ const UserMovieStatisticsSchema = new Schema({
             required: true
         },
         movieId: {
-            type: mongoose.Types.ObjectId,
+            type: String,
             ref: 'Movie'
         },
 
@@ -27,19 +27,15 @@ const UserMovieStatisticsSchema = new Schema({
         },
 
         // Watching statistics
-        watchCount: {
-            type: Number,
-            default: 0
-        },
         watchDates: {
             type: [Date],
             default: []
         },
-        watchDuration: {
+        watchDurationsSec: {
             type: [Number],
             default: []
         },
-        watchProgressMinutes: {
+        watchProgressSec: {
             type: Number,
             default: 0
         },
@@ -49,7 +45,7 @@ const UserMovieStatisticsSchema = new Schema({
             type: [Number],
             default: []
         },
-        reviews: {
+        reviewsId: {
             type: [mongoose.Types.ObjectId],
             ref: 'Review',
             default: []

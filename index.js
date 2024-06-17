@@ -7,11 +7,11 @@ import cors from 'cors'
 import {PORT} from "./config/constants.js";
 import {checkAuth} from "./middleware/index.js";
 import {handleValidationErrors, fileNamePreparation} from "./utils/index.js";
-import {UserController, ReviewController, MovieController, TmdbController} from "./controllers/index.js";
+import {UserController, ReviewController, MovieController, TmdbController, UserMovieStatisticsController} from "./controllers/index.js";
 import {reviewValidation, signupValidations, updateValidations} from "./validations/index.js";
 import {setUpcomingRequest} from "./middleware/setUpcomingRequest.js";
-import {isAdmin} from "./controllers/UserController.js";
 import {checkIsAdmin} from "./middleware/checkIsAdmin.js";
+import {check} from "express-validator";
 
 const app = express();
 const db = mongoose.connect(process.env.MONGO_URL)
@@ -73,15 +73,22 @@ app.post('/review/:id/unlike', checkAuth, ReviewController.unlike);
 
 // MOVIES
 app.get('/movies/:id', MovieController.getMovieById);
-app.post('/movies/request', MovieController.getMoviesByRequest);
-app.post('/movies/upcoming', setUpcomingRequest, MovieController.getMoviesByRequest);
-app.get('/movies/name/:name/:count', MovieController.getMoviesByName);
+app.post('/movies/request', checkAuth, MovieController.getMoviesByRequest);
+app.post('/movies/upcoming', checkAuth, setUpcomingRequest, MovieController.getMoviesByRequest);
+app.get('/movies/name/:name/:count', checkAuth, MovieController.getMoviesByName);
 app.get('/movies/user/favorites', checkAuth, MovieController.getFavoriteMovies);
 app.post('/movies/like-toggle', checkAuth, MovieController.likeToggle);
+
 
 // TMDB
 app.get('/tmdb/genres', checkAuth, TmdbController.getTmdbGenres);
 app.get('/movies/:tmdbId/trailer', MovieController.getMovieTrailer);
+
+
+// USER-MOVIE-STATISTICS
+app.post('/user-movie-statistics/update-watch-duration', checkAuth, UserMovieStatisticsController.UpdateWatch);
+app.get('/user-movie-statistics/:tmdbMovieId', checkAuth, UserMovieStatisticsController.getUserMovieStatistics);
+
 
 app.listen(PORT, (err) => {
     if (err) return console.log(err)

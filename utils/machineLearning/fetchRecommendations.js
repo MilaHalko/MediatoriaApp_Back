@@ -1,7 +1,8 @@
-const pyURL = 'http://tf:5001';
+// const pyURL = 'http://tf:5001';
+const pyURL = 'http://localhost:5001';
 
-export const fetchFilteredMovies = async (user, movies) => {
-    // const ncfMovies = await fetchNcfMovies(user, movies);
+export const fetchFilteredMovies = async (userId, moviesId) => {
+    const ncfMovies = await fetchNcfMovies(userId, moviesId);
     // const rnnMovies = await fetchRnnMovies(user, movies)
     // console.log('ncfMovies:', ncfMovies)
     // return mixRecommendations(ncfMovies, rnnMovies)
@@ -19,16 +20,18 @@ const fetchTest = async () => {
     }
 }
 
-const fetchNcfMovies = async (user, movies) => {
-    console.log('JSON.stringify({ movies }):', JSON.stringify({movies}))
+const fetchNcfMovies = async (userId, moviesId) => {
     const requestOptions = {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({movies}),
+        body: JSON.stringify({user_id: userId, movies_id: moviesId}),
     };
+
+    console.log('Body:', requestOptions.body)
 
     try {
         const response = await fetch(pyURL + '/recommend/ncf', requestOptions);
+        console.log('NCF response:', response.json())
         return await response.json();
     } catch (error) {
         console.error('Error fetching NCF movies:', error);

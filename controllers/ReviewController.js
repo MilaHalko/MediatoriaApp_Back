@@ -1,6 +1,7 @@
 import Review from '../modelsMongo/Review.js';
 import Movie from "../modelsMongo/Movie.js";
 import User from "../modelsMongo/User.js";
+import {getValidUserMovieStatistics} from "./UserMovieStatisticsController.js";
 
 export const getByMovie = async (req, res) => {
     console.log('Getting reviews by movie...')
@@ -51,6 +52,11 @@ export const create = async (req, res) => {
             $set: {averageRating: (movie.averageRating * movie.ratingCount + rating) / (movie.ratingCount + 1)},
             $inc: {ratingCount: 1},
         });
+        await movie.save();
+
+        const userMovieStatistics = await getValidUserMovieStatistics(req.userId, movie.tmdbId);
+        await userMovieStatistics.updateOne({$push: {ratings: rating, reviewsId: savedReview._id}});
+        await userMovieStatistics.save();
 
         console.log('Review created', savedReview)
         res.status(201).json(savedReview);
@@ -77,6 +83,11 @@ export const remove = async (req, res) => {
             $set: {averageRating: (movie.averageRating * movie.ratingCount - review.rating) / (movie.ratingCount - 1)},
             $inc: {ratingCount: -1}
         })
+        await movie.save();
+
+        const userMovieStatistics = await getValidUserMovieStatistics(req.userId, movie.tmdbId);
+        await userMovieStatistics.updateOne({$pull: {ratings: review.rating, reviewsId: reviewId}});
+        await userMovieStatistics.save();
 
         await Review.findOneAndDelete({_id: reviewId})
             .then(doc => {
@@ -100,6 +111,12 @@ export const like = async (req, res) => {
             {$addToSet: {likes: req.userId}},
             {new: true}
         ).populate('authorId', 'username');
+
+        const movie = await Movie.findById(review.movieId)
+        const userMovieStatistics = await getValidUserMovieStatistics(req.userId, movie.tmdbId);
+        await userMovieStatistics.updateOne({$addToSet: {likedReviews: review._id}});
+        await userMovieStatistics.save();
+
         console.log('Review liked', review)
         res.json(review);
     } catch (err) {
@@ -116,6 +133,12 @@ export const unlike = async (req, res) => {
             {$pull: {likes: req.userId}},
             {new: true}
         ).populate('authorId', 'username');
+
+        const movie = await Movie.findById(review.movieId)
+        const userMovieStatistics = await getUserMovieStatistics(req.userId, movie.tmdbId);
+        await userMovieStatistics.updateOne({$pull: {likedReviews: review._id}});
+        await userMovieStatistics.save();
+
         console.log('Review unliked', review)
         res.json(review);
     } catch (err) {

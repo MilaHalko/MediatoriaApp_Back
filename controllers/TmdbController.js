@@ -28,8 +28,10 @@ export const getMoviesByRequest = async (query, movieCount) => {
 }
 
 export const getMoviesByName = async (name, maxMoviesCount) => {
+    console.time('Tmdb movies by name loaded')
     const request = tmdbRequests.title(name.toString())
     console.log('Request:', request)
+    console.timeEnd('Tmdb movies by name loaded')
     return await getTmdbPages(request, maxMoviesCount)
 }
 
