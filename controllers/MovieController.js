@@ -120,6 +120,9 @@ export const likeToggle = async (req, res) => {
             userMovieStatistics.liked = false;
             userMovieStatistics.unlikeDates.push(new Date());
         } else {
+            if (user.favoriteMovies.includes(tmdbMovieId.toString())) {
+                return res.status(400).json({message: 'Movie already liked'});
+            }
             user.favoriteMovies.push(tmdbMovieId.toString());
             userMovieStatistics.liked = true;
             userMovieStatistics.likeDates.push(new Date());
