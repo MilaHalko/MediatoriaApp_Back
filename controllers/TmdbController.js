@@ -47,23 +47,35 @@ export const getTrailerById = async (id) => {
 }
 
 const getTmdbPages = async (request, movieCount) => {
+    console.time('Tmdb pages loaded')
     if (movieCount === undefined) movieCount = 100
     const steps = Math.ceil(movieCount / 20.0)
     let movies = []
+
+    async function getPage(i) {
+        const res = await fetch(request + `&page=${i + 1}`)
+        let newMovies = await res.json().then(data => data.results)
+        return await setMoviesImgUrl(newMovies)
+    }
+
     try {
+        let promises = [];
         for (let i = 1; i <= steps; i++) {
-            const res = await fetch(request + `&page=${i + 1}`)
-            let newMovies = await res.json().then(data => data.results)
-            newMovies = await setMoviesImgUrl(newMovies)
-            movies.push(...newMovies)
-            if (newMovies < 20) {
-                return movies
-            }
+            promises.push(getPage(i));
         }
+
+        let results = await Promise.all(promises);
+
+        for (let result of results) {
+            movies.push(...result);
+        }
+
     } catch (e) {
         console.log(e)
         return []
     }
+
+    console.timeEnd('Tmdb pages loaded')
     return movies.slice(0, movieCount)
 }
 
