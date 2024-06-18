@@ -7,11 +7,12 @@ import cors from 'cors'
 import {PORT} from "./config/constants.js";
 import {checkAuth} from "./middleware/index.js";
 import {handleValidationErrors, fileNamePreparation} from "./utils/index.js";
-import {UserController, ReviewController, MovieController, TmdbController, UserMovieStatisticsController} from "./controllers/index.js";
+import {UserController, ReviewController, MovieController, TmdbController, UserMovieStatisticsController, UserMovieStatisticsTrainController} from "./controllers/index.js";
 import {reviewValidation, signupValidations, updateValidations} from "./validations/index.js";
 import {setUpcomingRequest} from "./middleware/setUpcomingRequest.js";
 import {checkIsAdmin} from "./middleware/checkIsAdmin.js";
-import {check} from "express-validator";
+import {fetchPythonTest} from "./utils/machineLearning/fetchRecommendations.js";
+
 
 const app = express();
 const db = mongoose.connect(process.env.MONGO_URL)
@@ -89,6 +90,14 @@ app.get('/movies/:tmdbId/trailer', MovieController.getMovieTrailer);
 app.post('/user-movie-statistics/update-watch-duration', checkAuth, UserMovieStatisticsController.UpdateWatch);
 app.get('/user-movie-statistics/:tmdbMovieId', checkAuth, UserMovieStatisticsController.getUserMovieStatistics);
 
+
+// USER-MOVIE-STATISTICS-TRAIN
+app.get('/user-movie-statistics-train-data-generation', UserMovieStatisticsTrainController.generateUserMovieStatisticsTrain);
+app.get('/user-movie-statistics-train-ncf-model', UserMovieStatisticsTrainController.trainNcfModel);
+
+
+// PYTHON
+app.get('/check-python', fetchPythonTest)
 
 app.listen(PORT, (err) => {
     if (err) return console.log(err)
