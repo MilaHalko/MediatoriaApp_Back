@@ -1,22 +1,18 @@
-// const pyURL = 'http://tf:5001';
-const pyURL = 'http://localhost:5001';
-
 export const fetchFilteredMovies = async (userId, moviesId) => {
-    const ncfMovies = await fetchNcfMovies(userId, moviesId);
-    // const rnnMovies = await fetchRnnMovies(user, movies)
-    // console.log('ncfMovies:', ncfMovies)
-    // return mixRecommendations(ncfMovies, rnnMovies)
-    // fetchTest()
-    return
+    // const ncfTmdbMoviesId = await fetchNcfMovies(userId, moviesId).then(data => data.recommendations.sorted_movies_id);
+    const rnnMovies = await fetchRnnMovies(userId, moviesId);
+    // return ncfTmdbMoviesId;
+    return moviesId;
 }
 
-const fetchTest = async () => {
+export const fetchPythonTest = async (req, res) => {
+    console.log('Python test')
     try {
-        const response = await fetch(pyURL + '/');
-        return await response.json();
+        await fetch(process.env.PY_URL + '/');
+        res.json('Python test response successfull')
     } catch (error) {
         console.error('Error fetching test:', error);
-        return [];
+        res.json('Error fetching test:', error)
     }
 }
 
@@ -27,12 +23,10 @@ const fetchNcfMovies = async (userId, moviesId) => {
         body: JSON.stringify({user_id: userId, movies_id: moviesId}),
     };
 
-    console.log('Body:', requestOptions.body)
-
     try {
-        const response = await fetch(pyURL + '/recommend/ncf', requestOptions);
-        console.log('NCF response:', response.json())
-        return await response.json();
+        const response = await fetch(process.env.PY_URL + '/recommend/ncf', requestOptions);
+        const data = await response.json();
+        return data;
     } catch (error) {
         console.error('Error fetching NCF movies:', error);
         return [];
@@ -40,18 +34,18 @@ const fetchNcfMovies = async (userId, moviesId) => {
 };
 
 
-const fetchRnnMovies = async (user, movies) => {
+const fetchRnnMovies = async (userId, moviesId) => {
     const requestOptions = {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({user, movies}),
+        body: JSON.stringify({user_id: userId, movies_id: moviesId}),
     };
 
     try {
-        const response = await fetch(pyURL + `/recommend/rnn`, requestOptions);
-        console.log('RNN response:', response)
-        console.log('RNN response.json():', response.json())
-        return response.json();
+        const response = await fetch(process.env.PY_URL + `/recommend/rnn`, requestOptions);
+        const data = await response.json();
+        console.log('RNN data:', data)
+        return data;
     } catch (error) {
         console.error('Error fetching RNN movies:', error);
         return [];

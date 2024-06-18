@@ -23,7 +23,7 @@ const createMovieFromTmdb = async (tmdbId) => {
         return await movie.save();
     } catch (error) {
         console.error('Error creating movie from TMDB id:', tmdbId, 'TmdbMovie:', tmdbMovie, error);
-        throw error;
+        return null;
     }
 };
 
@@ -90,23 +90,39 @@ export const getMoviesByRequest = async (req, res) => {
     const {query, movieCount} = req.body;
     try {
         const tmdbMovies = await TmdbController.getMoviesByRequest(query, movieCount);
-        const movies = await Promise.all(tmdbMovies.map(async tmdbMovie => {
-            let movie = await Movie.findOne({tmdbId: tmdbMovie.id})
+
+        let movies = await Promise.all(tmdbMovies.map(async tmdbMovie => {
+            let movie = await Movie.findOne({ tmdbId: tmdbMovie.id });
             if (!movie) {
                 console.log('No movie found with id:', tmdbMovie.id);
                 movie = await createMovieFromTmdb(tmdbMovie.id);
             }
             return movie;
         }));
-        const moviesId = movies.map(movie => movie._id);
-        await fetchFilteredMovies(req.userId, moviesId);
-        console.log('Movies by request loaded')
-        res.json(movies);
+        if (movies.includes(null)) {
+            movies = movies.filter(movie => movie !== null);
+        }
+
+        const sortedMovies = await getFilteredMovies(movies, req.userId);
+        console.log('Sorted movies:', sortedMovies.map(movie => movie.tmdbId))
+        console.log('Movies by request loaded:', sortedMovies.length)
+        res.json(sortedMovies);
     } catch (error) {
         console.error(error);
         res.status(500).json({message: 'Server error'});
     }
 };
+
+
+const getFilteredMovies = async (movies, userId) => {
+    console.log('User id:', userId)
+    const moviesId = movies.map(movie => movie._id);
+    const filteredTmdbMoviesIds = await fetchFilteredMovies(userId, moviesId);
+    return [...movies].sort((a, b) =>
+        filteredTmdbMoviesIds.indexOf(a.tmdbId.toString()) - filteredTmdbMoviesIds.indexOf(b.tmdbId.toString())
+    );
+}
+
 
 export const likeToggle = async (req, res) => {
     const {tmdbMovieId, isLiked} = req.body;
