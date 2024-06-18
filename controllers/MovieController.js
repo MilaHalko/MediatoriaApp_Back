@@ -59,8 +59,9 @@ export const getMoviesByName = async (req, res) => {
             return movie;
         }))
         console.timeEnd('Movies by name Mongo create')
+        const sortedMovies = await getFilteredMovies(movies, req.userId);
         console.log('Movies by name loaded')
-        res.json(movies);
+        res.json(sortedMovies);
     } catch (error) {
         console.error(error);
         res.status(500).json({message: 'Server error'});

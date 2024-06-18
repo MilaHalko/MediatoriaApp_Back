@@ -24,7 +24,15 @@ export const getMovieById = async (id) => {
 
 export const getMoviesByRequest = async (query, movieCount) => {
     const request = tmdbRequests.request(query)
-    return await getTmdbPages(request, movieCount)
+    const movies = await getTmdbPages(request, movieCount)
+    const uniqueMovies = movies.filter((movie, index, self) =>
+        index === self.findIndex((m) => (
+            m.id === movie.id
+        ))
+    )
+    console.log('Different movies:', movies.length - uniqueMovies.length)
+    return uniqueMovies
+
 }
 
 export const getMoviesByName = async (name, maxMoviesCount) => {
