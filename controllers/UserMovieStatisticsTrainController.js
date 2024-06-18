@@ -3,7 +3,7 @@ import UserMovieStatisticsTrain from "../modelsMongo/UserMovieStatisticsTrain.js
 import Movie from "../modelsMongo/Movie.js";
 
 const NUMBER_OF_USERS = 100;
-const AVERAGE_NUMBER_OF_STATISTICS = 10;
+const AVERAGE_NUMBER_OF_STATISTICS = 50;
 
 export const generateUserMovieStatisticsTrain = async (req, res) => {
     const movies = await Movie.find();
