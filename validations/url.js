@@ -7,7 +7,7 @@ export const urlIsValid = async (URL, timeout = 5000) => { // 5000ms timeout
         clearTimeout(timeoutId);
         return res.status >= 200 && res.status < 300;
     } catch (e) {
-        console.log('URL is not valid:', URL, e);
+        console.log('URL is not valid:', URL);
         return false;
     }
 }
